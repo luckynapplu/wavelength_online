@@ -20,16 +20,24 @@
         
         input[type=range] { width: 100%; margin: 30px 0; cursor: pointer; }
 
-        /* チーム選択・プレイヤーリスト */
+        /* ロビー・チーム表示 */
         .lobby-container { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; }
         .team-column { flex: 1; background: #333; padding: 10px; border-radius: 8px; border-top: 3px solid #777; }
         .team-header { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
         .player-list { min-height: 50px; font-size: 13px; text-align: left; margin-bottom: 10px; }
-        .p-item { padding: 2px 5px; border-radius: 4px; margin-bottom: 2px; background: rgba(255,255,255,0.1); }
+        .p-item { padding: 4px 6px; border-radius: 4px; margin-bottom: 2px; background: rgba(255,255,255,0.1); display: flex; justify-content: space-between; }
         .p-me { border: 1px solid #fff; font-weight: bold; }
-        .p-psychic::after { content: " ★親"; color: #ff9800; font-size: 11px; }
-
+        
+        /* 役割バッジ */
+        .role-icon { font-size: 10px; padding: 2px 4px; border-radius: 4px; margin-left: 5px; }
+        .badge-psychic { background: #ff9800; color: #000; }
         .my-team-badge { background: #555; padding: 5px 15px; border-radius: 20px; font-size: 12px; display: inline-block; margin-bottom: 10px; }
+
+        /* インフォメーションバー */
+        .info-bar { background: #444; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
+        .turn-indicator { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+
+        /* 結果バー */
         .result-viz-container { position: relative; width: 100%; height: 60px; background-color: #444; border-radius: 8px; margin: 15px 0; overflow: hidden; }
         .zone { position: absolute; height: 100%; top: 0; opacity: 0.8; }
         .zone-2 { background-color: #4fc3f7; } .zone-3 { background-color: #ffd740; } .zone-4 { background-color: #ff6e40; }
@@ -57,7 +65,7 @@
         </div>
 
         <div id="my-status-area">
-            <span class="my-team-badge">観戦中 (チームを選んでください)</span>
+            <span class="my-team-badge">観戦中</span>
         </div>
 
         <div class="lobby-container">
@@ -75,22 +83,32 @@
             </div>
         </div>
 
-        <p id="status-text" style="font-size:18px; font-weight:bold; color:#ffeb3b; min-height: 27px; margin: 10px 0;">
-            チームを選んでください
-        </p>
+        <div id="game-info-bar" class="info-bar hidden">
+            <div id="info-round" style="font-size:12px; color:#aaa;">ROUND 1</div>
+            <div id="info-turn" class="turn-indicator">TEAM A のターン</div>
+            <div id="info-psychic" style="font-size:14px;">親: ???</div>
+        </div>
 
         <div id="phase-waiting" class="hidden">
+            <p style="color:#aaa; font-size:14px; margin:20px 0;">
+                チーム分けをして<br>「ゲームスタート」を押してください
+            </p>
             <button class="btn btn-green" onclick="startNewRound(true)">ゲームスタート</button>
         </div>
 
         <div id="phase-psychic" class="hidden">
             <div id="view-psychic-active" class="hidden">
-                <p style="background:#ff9800; color:#000; display:inline-block; padding:2px 8px; border-radius:4px; font-size:12px;">あなたは親です</p>
-                <p>数値を確認してヒントを出そう</p>
+                <div style="background:#ff9800; color:#000; padding:10px; border-radius:8px; margin-bottom:10px;">
+                    <h2 style="margin:0; font-size:20px;">あなたが親です！</h2>
+                    <p style="margin:5px 0 0 0; font-size:12px;">数値を確認してヒントを出してください</p>
+                </div>
+                <p>今回のお題(数値)</p>
                 <div class="big-number" id="secret-target">??</div>
                 <button class="btn" onclick="nextPhase('GUESS')">ヒントを出した (回答へ)</button>
             </div>
+            
             <div id="view-psychic-wait">
+                <p id="msg-psychic-wait" style="font-size:16px;">親がヒントを考えています...</p>
                 <div class="big-number" style="font-size:40px; color:#555;">SECRET</div>
             </div>
         </div>
@@ -103,8 +121,9 @@
         </div>
 
         <div id="phase-counter" class="hidden">
-            <p>敵チームのチャンス！<br>正解は予想(<span id="locked-guess"></span>)より...</p>
-            <div style="display:flex; justify-content:space-between;">
+            <p style="font-size:18px;">敵チームのチャンス！</p>
+            <p style="font-size:14px; color:#aaa;">正解は予想(<span id="locked-guess" style="color:#fff; font-weight:bold;"></span>)より...</p>
+            <div style="display:flex; justify-content:space-between; margin-top:20px;">
                 <button id="btn-left" class="btn hidden" style="width:48%" onclick="submitCounter('Left')">⬅️ 左</button>
                 <button id="btn-right" class="btn hidden" style="width:48%" onclick="submitCounter('Right')">右 ➡️</button>
             </div>
@@ -112,14 +131,15 @@
         </div>
 
         <div id="phase-result" class="hidden">
+            <h2>結果発表</h2>
             <div class="result-viz-container" id="viz-bar"></div>
-            <div id="result-details" style="text-align:left; font-size:14px; line-height:1.6;"></div>
-            <button class="btn btn-green" onclick="startNewRound()">次のラウンドへ</button>
+            <div id="result-details" style="text-align:left; font-size:14px; line-height:1.6; background:#333; padding:10px; border-radius:8px;"></div>
+            <button class="btn btn-green" style="margin-top:15px;" onclick="startNewRound()">次のラウンドへ</button>
         </div>
 
         <div id="phase-win" class="hidden">
             <h1>WINNER!</h1>
-            <div style="font-size:60px;">🏆</div>
+            <div style="font-size:80px; margin:20px 0;">🏆</div>
             <h2 id="winner-name">TEAM A</h2>
             <button class="btn btn-red" onclick="startNewRound(true)">リセットして再戦</button>
         </div>
@@ -128,14 +148,14 @@
     <script>
         // ★★★ Firebase設定 (ここを書き換えてください！) ★★★
         const firebaseConfig = {
-  apiKey: "AIzaSyDTnNp8ObeesaXjjBQqlC1MPLPh8V5SfPM",
-  authDomain: "wavelength-online-2c27b.firebaseapp.com",
-  databaseURL: "https://wavelength-online-2c27b-default-rtdb.firebaseio.com",
-  projectId: "wavelength-online-2c27b",
-  storageBucket: "wavelength-online-2c27b.firebasestorage.app",
-  messagingSenderId: "1057840306391",
-  appId: "1:1057840306391:web:432e632f9af1f286643892"
-};
+            apiKey: "AIzaSyDxxxxxxxxxxxxxxxxxxxxxxxx",
+            authDomain: "wavelength-xxxxx.firebaseapp.com",
+            databaseURL: "https://wavelength-xxxxx-default-rtdb.firebaseio.com",
+            projectId: "wavelength-xxxxx",
+            storageBucket: "wavelength-xxxxx.appspot.com",
+            messagingSenderId: "00000000000",
+            appId: "1:00000000000:web:000000000000"
+        };
         // ★★★★★★★★★★★★★★★★★★★★★★★
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -156,13 +176,11 @@
         const RANGES = { w4: 2, w3: 5, w2: 8 };
         const TEAM_CONF = { A: {color:"#2196F3", name:"TEAM A"}, B: {color:"#F44336", name:"TEAM B"} };
 
-        // 接続処理 (エラーハンドリング追加版)
         function connectToRoom() {
             const name = document.getElementById('input-name').value;
             const room = document.getElementById('input-room').value;
             if (!name || !room) return alert("名前と部屋IDを入力してください");
 
-            // ボタンをロック
             const loginBtn = document.getElementById('btn-login');
             loginBtn.disabled = true;
             loginBtn.innerText = "接続中...";
@@ -171,19 +189,15 @@
             roomId = "wl_room_" + room;
             document.getElementById('display-room-id').innerText = room;
             
-            // ★接続テスト★ 実際に書き込んでみる
             db.ref(`${roomId}/players/${myId}`).update({
                 name: myName,
                 online: true
             })
             .then(() => {
-                // 成功したらここに来る
                 db.ref(`${roomId}/players/${myId}/online`).onDisconnect().remove();
-
                 document.getElementById('screen-login').classList.add('hidden');
                 document.getElementById('screen-game').classList.remove('hidden');
-
-                // 監視開始
+                
                 db.ref(roomId).on('value', snapshot => {
                     const data = snapshot.val();
                     if (data) {
@@ -196,46 +210,46 @@
                 });
             })
             .catch((error) => {
-                // 失敗したらここに来る
-                alert("エラー：接続できませんでした。\n\n【原因の可能性】\n1. index.html内のAPI Keyが書き変わっていない\n2. FirebaseのDatabaseルールが書き込み禁止(read:false/write:false)になっている\n\n詳細: " + error.message);
+                alert("エラー：接続できません。\nAPIキー設定やDBルールを確認してください。\n" + error.message);
                 loginBtn.disabled = false;
                 loginBtn.innerText = "ロビーへ入室";
             });
         }
 
-        // チームに参加
         function joinTeam(team) {
             myTeam = team;
-            // エラーが出たらアラートする
-            db.ref(`${roomId}/players/${myId}`).update({
-                team: team,
-                name: myName
-            }).catch(e => alert("チーム参加エラー: " + e.message));
+            db.ref(`${roomId}/players/${myId}`).update({ team: team, name: myName })
+            .catch(e => alert("チーム参加エラー: " + e.message));
         }
 
+        // ラウンド開始（先攻・親・お題をここで決定）
         function startNewRound(fullReset = false) {
+            const players = gameState.players || {};
             let scores = { A: 0, B: 0 };
             let round = 1;
             let nextTeam = 'A';
-            const players = gameState.players || {};
 
+            // リセットでなければ続きから
             if (!fullReset && gameState.scores) {
                 scores = gameState.scores;
                 round = gameState.round + 1;
                 nextTeam = gameState.currentTeam === 'A' ? 'B' : 'A';
             } else {
+                // 完全リセット時はランダム先攻
                 nextTeam = Math.random() < 0.5 ? 'A' : 'B';
             }
 
+            // 親を決める（オンラインの人から）
             const teamMembers = Object.keys(players).filter(uid => {
                 const p = players[uid];
                 return p.team === nextTeam && p.online; 
             });
             
-            let psychicId = null;
-            if (teamMembers.length > 0) {
-                psychicId = teamMembers[Math.floor(Math.random() * teamMembers.length)];
+            if (teamMembers.length === 0) {
+                return alert(`${TEAM_CONF[nextTeam].name} にメンバーがいません！\nチーム分けをしてから開始してください。`);
             }
+
+            const psychicId = teamMembers[Math.floor(Math.random() * teamMembers.length)];
 
             db.ref(roomId).update({
                 phase: 'PSYCHIC',
@@ -320,6 +334,7 @@
             const g = gameState;
             const players = g.players || {};
 
+            // ステータスバッジ
             document.getElementById('connection-status').innerText = "通信OK";
             const badge = document.querySelector('.my-team-badge');
             if (!myTeam) {
@@ -330,6 +345,7 @@
                 badge.style.background = TEAM_CONF[myTeam].color;
             }
 
+            // ロビーリスト描画
             const listA = document.getElementById('list-a');
             const listB = document.getElementById('list-b');
             listA.innerHTML = ""; listB.innerHTML = "";
@@ -340,40 +356,64 @@
                 if (!p.online) return; 
 
                 const div = document.createElement('div');
-                div.className = "p-item" + (uid === myId ? " p-me" : "") + (uid === g.psychicId ? " p-psychic" : "");
-                div.innerText = p.name;
+                div.className = "p-item" + (uid === myId ? " p-me" : "");
+                
+                // 名前
+                const nameSpan = document.createElement('span');
+                nameSpan.innerText = p.name;
+                div.appendChild(nameSpan);
+
+                // 親アイコン
+                if (uid === g.psychicId && g.phase !== 'WAITING' && g.phase !== 'WIN') {
+                    const icon = document.createElement('span');
+                    icon.className = "role-icon badge-psychic";
+                    icon.innerText = "親";
+                    div.appendChild(icon);
+                }
 
                 if (p.team === 'A') { listA.appendChild(div); countA++; }
                 else if (p.team === 'B') { listB.appendChild(div); countB++; }
             });
             document.getElementById('count-a').innerText = countA;
             document.getElementById('count-b').innerText = countB;
-
             document.getElementById('score-a').innerText = g.scores ? g.scores.A : 0;
             document.getElementById('score-b').innerText = g.scores ? g.scores.B : 0;
 
+            // フェーズ表示制御
             ['waiting', 'psychic', 'guess', 'counter', 'result', 'win'].forEach(id => {
                 document.getElementById('phase-' + id).classList.add('hidden');
             });
 
+            // ゲーム情報バー
+            const infoBar = document.getElementById('game-info-bar');
+
+            // --- 待機フェーズ (ロビー) ---
             if (!g.phase || g.phase === 'WAITING') {
-                document.getElementById('status-text').innerText = "メンバーが集まったら開始してください";
+                infoBar.classList.add('hidden');
                 document.getElementById('phase-waiting').classList.remove('hidden');
                 return;
             }
 
+            // --- ゲーム中 ---
+            infoBar.classList.remove('hidden');
             const tmConf = TEAM_CONF[g.currentTeam] || {name:"", color:"#fff"};
-            const statusEl = document.getElementById('status-text');
-            statusEl.style.color = tmConf.color;
+            const pName = players[g.psychicId] ? players[g.psychicId].name : "???";
 
+            // 情報バー更新
+            document.getElementById('info-round').innerText = `ROUND ${g.round}`;
+            const turnEl = document.getElementById('info-turn');
+            turnEl.innerText = `${tmConf.name} のターン`;
+            turnEl.style.color = tmConf.color;
+            document.getElementById('info-psychic').innerText = `親: ${pName}`;
+
+            // 役割フラグ
             const isActiveTeam = (myTeam === g.currentTeam);
             const isPsychic = (myId === g.psychicId);
             const isEnemy = (myTeam && !isActiveTeam);
 
+            // 1. 出題
             if (g.phase === 'PSYCHIC') {
                 document.getElementById('phase-psychic').classList.remove('hidden');
-                const pName = players[g.psychicId] ? players[g.psychicId].name : "親";
-                statusEl.innerText = `${tmConf.name} (${pName}) の出題`;
                 
                 if (isPsychic) {
                     document.getElementById('view-psychic-active').classList.remove('hidden');
@@ -382,13 +422,15 @@
                 } else {
                     document.getElementById('view-psychic-active').classList.add('hidden');
                     document.getElementById('view-psychic-wait').classList.remove('hidden');
+                    const msg = isActiveTeam ? `${pName}さんがお題を確認中...` : `敵チーム(${pName}さん)が出題中...`;
+                    document.getElementById('msg-psychic-wait').innerText = msg;
                 }
             } 
+            // 2. 回答
             else if (g.phase === 'GUESS') {
                 document.getElementById('phase-guess').classList.remove('hidden');
-                statusEl.innerText = `${tmConf.name} が相談中...`;
-                
                 document.getElementById('guess-display').innerText = g.guess;
+                
                 const slider = document.getElementById('slider');
                 slider.value = g.guess;
                 slider.style.accentColor = tmConf.color;
@@ -403,15 +445,19 @@
                 } else {
                     slider.disabled = true;
                     submitBtn.classList.add('hidden');
-                    msg.innerText = isPsychic ? "親は操作できません" : "相手チームが操作中...";
+                    if(isPsychic) msg.innerText = "親は操作できません（祈りましょう）";
+                    else msg.innerText = "相手チームが相談中...";
                 }
             }
+            // 3. チャンス
             else if (g.phase === 'COUNTER') {
                 document.getElementById('phase-counter').classList.remove('hidden');
                 const enemyConf = TEAM_CONF[g.currentTeam === 'A' ? 'B' : 'A'];
-                statusEl.innerText = `${enemyConf.name} のチャンス！`;
-                statusEl.style.color = enemyConf.color;
                 document.getElementById('locked-guess').innerText = g.guess;
+                
+                // 表示上書き
+                turnEl.innerText = `${enemyConf.name} のチャンス`;
+                turnEl.style.color = enemyConf.color;
 
                 if (isEnemy) {
                     document.getElementById('btn-left').classList.remove('hidden');
@@ -423,22 +469,27 @@
                     document.getElementById('counter-wait-msg').classList.remove('hidden');
                 }
             }
+            // 4. 結果
             else if (g.phase === 'RESULT') {
                 document.getElementById('phase-result').classList.remove('hidden');
-                statusEl.innerText = "結果発表";
-                statusEl.style.color = "#fff";
+                turnEl.innerText = "結果発表";
+                turnEl.style.color = "#fff";
                 drawVisualResult(g.target, g.guess, tmConf.color);
                 
                 const rd = g.resultData || {};
                 document.getElementById('result-details').innerHTML = `
-                    <p>正解: <strong style="color:#ffeb3b">${g.target}</strong> (誤差 ${rd.finalDiff})</p>
-                    <p>手番(${tmConf.name}): <strong>+${rd.activePts}点</strong></p>
-                    <p>チャンス: ${rd.counterStr}</p>
+                    <div style="margin-bottom:5px;">正解: <strong style="color:#ffeb3b; font-size:18px;">${g.target}</strong></div>
+                    <div style="border-bottom:1px solid #555; margin-bottom:5px; padding-bottom:5px;">誤差: ${rd.finalDiff}</div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:${tmConf.color}">${tmConf.name}: <strong>+${rd.activePts}</strong></span>
+                        <span style="color:#fff">チャンス: <strong>${rd.counterStr}</strong></span>
+                    </div>
                 `;
             }
+            // 5. 勝利
             else if (g.phase === 'WIN') {
                 document.getElementById('phase-win').classList.remove('hidden');
-                statusEl.innerText = "";
+                infoBar.classList.add('hidden'); // 勝ったらバーを消す
                 const winner = g.scores.A >= WIN_SCORE ? 'TEAM A' : 'TEAM B';
                 document.getElementById('winner-name').innerText = winner;
                 document.getElementById('winner-name').style.color = TEAM_CONF[winner.slice(-1)].color;
