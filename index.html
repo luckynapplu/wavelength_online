@@ -11,7 +11,7 @@
         body { font-family: -apple-system, sans-serif; background-color: #1a1a1a; color: #fff; text-align: center; padding: 20px; user-select: none; }
         .card { background: #2d2d2d; padding: 20px; border-radius: 15px; max-width: 500px; margin: 0 auto; border-top: 5px solid #555; }
         .btn { background-color: #555; border: none; color: white; padding: 15px 0; width: 100%; border-radius: 50px; font-size: 16px; margin: 5px 0; cursor: pointer; font-weight: bold; transition: opacity 0.3s; }
-        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; background-color: #777; }
         .btn-green { background-color: #4CAF50; }
         .btn-blue { background-color: #2196F3; }
         .btn-red { background-color: #F44336; }
@@ -29,10 +29,7 @@
         .p-me { border: 1px solid #fff; font-weight: bold; }
         .p-psychic::after { content: " ★親"; color: #ff9800; font-size: 11px; }
 
-        /* 現在のチーム表示バッジ */
         .my-team-badge { background: #555; padding: 5px 15px; border-radius: 20px; font-size: 12px; display: inline-block; margin-bottom: 10px; }
-
-        /* 結果バー */
         .result-viz-container { position: relative; width: 100%; height: 60px; background-color: #444; border-radius: 8px; margin: 15px 0; overflow: hidden; }
         .zone { position: absolute; height: 100%; top: 0; opacity: 0.8; }
         .zone-2 { background-color: #4fc3f7; } .zone-3 { background-color: #ffd740; } .zone-4 { background-color: #ff6e40; }
@@ -50,7 +47,7 @@
             <p>合言葉 (部屋ID)</p>
             <input type="text" id="input-room" placeholder="例: 0119" style="padding:10px; font-size:16px; width:80%; text-align:center;">
         </div>
-        <button class="btn btn-green" onclick="connectToRoom()">ロビーへ入室</button>
+        <button id="btn-login" class="btn btn-green" onclick="connectToRoom()">ロビーへ入室</button>
     </div>
 
     <div id="screen-game" class="card hidden">
@@ -129,16 +126,16 @@
     </div>
 
     <script>
-        // ★★★ Firebase設定 (ご自身のものに書き換えてください) ★★★
+        // ★★★ Firebase設定 (ここを書き換えてください！) ★★★
         const firebaseConfig = {
-            apiKey: "AIzaSyDxxxxxxxxxxxxxxxxxxxxxxxx",
-            authDomain: "wavelength-xxxxx.firebaseapp.com",
-            databaseURL: "https://wavelength-xxxxx-default-rtdb.firebaseio.com",
-            projectId: "wavelength-xxxxx",
-            storageBucket: "wavelength-xxxxx.appspot.com",
-            messagingSenderId: "00000000000",
-            appId: "1:00000000000:web:000000000000"
-        };
+  apiKey: "AIzaSyDTnNp8ObeesaXjjBQqlC1MPLPh8V5SfPM",
+  authDomain: "wavelength-online-2c27b.firebaseapp.com",
+  databaseURL: "https://wavelength-online-2c27b-default-rtdb.firebaseio.com",
+  projectId: "wavelength-online-2c27b",
+  storageBucket: "wavelength-online-2c27b.firebasestorage.app",
+  messagingSenderId: "1057840306391",
+  appId: "1:1057840306391:web:432e632f9af1f286643892"
+};
         // ★★★★★★★★★★★★★★★★★★★★★★★
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -151,7 +148,7 @@
         }
 
         let myName = "";
-        let myTeam = ""; // 'A', 'B', or '' (spectator)
+        let myTeam = ""; 
         let roomId = "";
         let gameState = {};
         
@@ -159,52 +156,63 @@
         const RANGES = { w4: 2, w3: 5, w2: 8 };
         const TEAM_CONF = { A: {color:"#2196F3", name:"TEAM A"}, B: {color:"#F44336", name:"TEAM B"} };
 
-        // 1. 部屋に接続 (まだチームは未定)
+        // 接続処理 (エラーハンドリング追加版)
         function connectToRoom() {
             const name = document.getElementById('input-name').value;
             const room = document.getElementById('input-room').value;
             if (!name || !room) return alert("名前と部屋IDを入力してください");
 
+            // ボタンをロック
+            const loginBtn = document.getElementById('btn-login');
+            loginBtn.disabled = true;
+            loginBtn.innerText = "接続中...";
+
             myName = name;
             roomId = "wl_room_" + room;
             document.getElementById('display-room-id').innerText = room;
             
-            // プレイヤー登録 (最初はチーム未定 = 観戦)
+            // ★接続テスト★ 実際に書き込んでみる
             db.ref(`${roomId}/players/${myId}`).update({
                 name: myName,
                 online: true
-            });
-            // 切断時にオンラインフラグを消す設定
-            db.ref(`${roomId}/players/${myId}/online`).onDisconnect().remove();
+            })
+            .then(() => {
+                // 成功したらここに来る
+                db.ref(`${roomId}/players/${myId}/online`).onDisconnect().remove();
 
-            document.getElementById('screen-login').classList.add('hidden');
-            document.getElementById('screen-game').classList.remove('hidden');
+                document.getElementById('screen-login').classList.add('hidden');
+                document.getElementById('screen-game').classList.remove('hidden');
 
-            // DB監視開始
-            db.ref(roomId).on('value', snapshot => {
-                const data = snapshot.val();
-                if (data) {
-                    gameState = data;
-                    renderGame();
-                } else {
-                    // 部屋データがない場合（初回）
-                    gameState = { phase: 'WAITING', players: {} };
-                    renderGame();
-                }
+                // 監視開始
+                db.ref(roomId).on('value', snapshot => {
+                    const data = snapshot.val();
+                    if (data) {
+                        gameState = data;
+                        renderGame();
+                    } else {
+                        gameState = { phase: 'WAITING', players: {} };
+                        renderGame();
+                    }
+                });
+            })
+            .catch((error) => {
+                // 失敗したらここに来る
+                alert("エラー：接続できませんでした。\n\n【原因の可能性】\n1. index.html内のAPI Keyが書き変わっていない\n2. FirebaseのDatabaseルールが書き込み禁止(read:false/write:false)になっている\n\n詳細: " + error.message);
+                loginBtn.disabled = false;
+                loginBtn.innerText = "ロビーへ入室";
             });
         }
 
-        // チームに参加・移動
+        // チームに参加
         function joinTeam(team) {
             myTeam = team;
+            // エラーが出たらアラートする
             db.ref(`${roomId}/players/${myId}`).update({
                 team: team,
                 name: myName
-            });
-            // UI更新はDB監視経由で行われる
+            }).catch(e => alert("チーム参加エラー: " + e.message));
         }
 
-        // ゲーム進行: 新ラウンド開始
         function startNewRound(fullReset = false) {
             let scores = { A: 0, B: 0 };
             let round = 1;
@@ -219,11 +227,9 @@
                 nextTeam = Math.random() < 0.5 ? 'A' : 'B';
             }
 
-            // 次のチームからランダムで親を選ぶ
-            // (オンラインかつ、そのチームの人から選ぶ)
             const teamMembers = Object.keys(players).filter(uid => {
                 const p = players[uid];
-                return p.team === nextTeam && p.online; // オンラインの人だけ
+                return p.team === nextTeam && p.online; 
             });
             
             let psychicId = null;
@@ -244,19 +250,15 @@
             });
         }
 
-        // スライダー操作
         function onSliderChange(val) {
             if (gameState.phase !== 'GUESS') return;
-            // 権限チェック: 自チームの手番 かつ 自分は親じゃない
             if (gameState.currentTeam === myTeam && gameState.psychicId !== myId) {
                 db.ref(roomId).update({ guess: parseInt(val) });
             }
         }
 
         function nextPhase(next) {
-            // 親権限チェック
             if (next === 'GUESS' && myId !== gameState.psychicId) return;
-            // 回答確定チェック
             if (next === 'COUNTER') {
                  if (myTeam !== gameState.currentTeam || myId === gameState.psychicId) return;
             }
@@ -264,7 +266,7 @@
         }
 
         function submitCounter(direction) {
-            if (myTeam === gameState.currentTeam) return; // 敵チームのみ
+            if (myTeam === gameState.currentTeam) return; 
 
             const target = gameState.target;
             const guess = gameState.guess;
@@ -314,22 +316,20 @@
             });
         }
 
-        // ★★★ 描画 ★★★
         function renderGame() {
             const g = gameState;
             const players = g.players || {};
 
-            // 0. ステータス表示
             document.getElementById('connection-status').innerText = "通信OK";
+            const badge = document.querySelector('.my-team-badge');
             if (!myTeam) {
-                document.querySelector('.my-team-badge').innerText = "観戦中 (チームに参加してください)";
-                document.querySelector('.my-team-badge').style.background = "#555";
+                badge.innerText = "観戦中 (チームに参加してください)";
+                badge.style.background = "#555";
             } else {
-                document.querySelector('.my-team-badge').innerText = "あなたは " + TEAM_CONF[myTeam].name + " です";
-                document.querySelector('.my-team-badge').style.background = TEAM_CONF[myTeam].color;
+                badge.innerText = "あなたは " + TEAM_CONF[myTeam].name + " です";
+                badge.style.background = TEAM_CONF[myTeam].color;
             }
 
-            // 1. ロビー（プレイヤーリスト）更新
             const listA = document.getElementById('list-a');
             const listB = document.getElementById('list-b');
             listA.innerHTML = ""; listB.innerHTML = "";
@@ -337,7 +337,7 @@
 
             Object.keys(players).forEach(uid => {
                 const p = players[uid];
-                if (!p.online) return; // オフラインの人は表示しない簡易対応
+                if (!p.online) return; 
 
                 const div = document.createElement('div');
                 div.className = "p-item" + (uid === myId ? " p-me" : "") + (uid === g.psychicId ? " p-psychic" : "");
@@ -345,21 +345,17 @@
 
                 if (p.team === 'A') { listA.appendChild(div); countA++; }
                 else if (p.team === 'B') { listB.appendChild(div); countB++; }
-                // チーム未所属はリストに出さないか、別の場所に出す（今回は割愛）
             });
             document.getElementById('count-a').innerText = countA;
             document.getElementById('count-b').innerText = countB;
 
-            // スコア
             document.getElementById('score-a').innerText = g.scores ? g.scores.A : 0;
             document.getElementById('score-b').innerText = g.scores ? g.scores.B : 0;
 
-            // 2. フェーズ制御
             ['waiting', 'psychic', 'guess', 'counter', 'result', 'win'].forEach(id => {
                 document.getElementById('phase-' + id).classList.add('hidden');
             });
 
-            // フェーズ: 待機
             if (!g.phase || g.phase === 'WAITING') {
                 document.getElementById('status-text').innerText = "メンバーが集まったら開始してください";
                 document.getElementById('phase-waiting').classList.remove('hidden');
@@ -370,12 +366,10 @@
             const statusEl = document.getElementById('status-text');
             statusEl.style.color = tmConf.color;
 
-            // 役割フラグ
             const isActiveTeam = (myTeam === g.currentTeam);
             const isPsychic = (myId === g.psychicId);
             const isEnemy = (myTeam && !isActiveTeam);
 
-            // フェーズ: 出題
             if (g.phase === 'PSYCHIC') {
                 document.getElementById('phase-psychic').classList.remove('hidden');
                 const pName = players[g.psychicId] ? players[g.psychicId].name : "親";
@@ -390,7 +384,6 @@
                     document.getElementById('view-psychic-wait').classList.remove('hidden');
                 }
             } 
-            // フェーズ: 回答
             else if (g.phase === 'GUESS') {
                 document.getElementById('phase-guess').classList.remove('hidden');
                 statusEl.innerText = `${tmConf.name} が相談中...`;
@@ -413,7 +406,6 @@
                     msg.innerText = isPsychic ? "親は操作できません" : "相手チームが操作中...";
                 }
             }
-            // フェーズ: チャンス
             else if (g.phase === 'COUNTER') {
                 document.getElementById('phase-counter').classList.remove('hidden');
                 const enemyConf = TEAM_CONF[g.currentTeam === 'A' ? 'B' : 'A'];
@@ -431,7 +423,6 @@
                     document.getElementById('counter-wait-msg').classList.remove('hidden');
                 }
             }
-            // フェーズ: 結果
             else if (g.phase === 'RESULT') {
                 document.getElementById('phase-result').classList.remove('hidden');
                 statusEl.innerText = "結果発表";
@@ -445,7 +436,6 @@
                     <p>チャンス: ${rd.counterStr}</p>
                 `;
             }
-            // フェーズ: 勝利
             else if (g.phase === 'WIN') {
                 document.getElementById('phase-win').classList.remove('hidden');
                 statusEl.innerText = "";
@@ -455,7 +445,6 @@
             }
         }
 
-        // 結果描画
         function drawVisualResult(target, guess, color) {
             const container = document.getElementById('viz-bar');
             container.innerHTML = ''; 
