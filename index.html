@@ -37,9 +37,18 @@
 
         /* 結果強調表示用 */
         .result-box { background: #333; padding: 15px; border-radius: 8px; margin-top: 10px; }
-        .score-pop { font-size: 40px; font-weight: bold; color: #4CAF50; text-shadow: 0 0 10px rgba(76,175,80,0.5); display: block; margin: 5px 0; }
-        .score-msg { font-size: 18px; font-weight: bold; color: #ffeb3b; display: block; margin-bottom: 10px; }
-        .counter-res { font-size: 14px; color: #aaa; border-top: 1px solid #555; padding-top: 10px; margin-top: 10px; }
+        
+        .score-msg { font-size: 18px; font-weight: bold; color: #fff; display: block; margin-bottom: 5px; }
+        
+        /* 0点と得点時で色を変えるためのクラス */
+        .score-pop { font-size: 45px; font-weight: bold; display: block; margin: 5px 0; line-height: 1; }
+        .score-positive { color: #4CAF50; text-shadow: 0 0 15px rgba(76,175,80,0.6); }
+        .score-zero { color: #888; } /* 0点は地味に */
+
+        /* チャンス結果 */
+        .counter-res { font-size: 16px; margin-top: 15px; padding: 10px; border-radius: 8px; border: 1px solid #555; background: rgba(0,0,0,0.2); }
+        .counter-success { border-color: #ffeb3b; background: rgba(255, 235, 59, 0.15); color: #fff; font-weight: bold; }
+        .counter-fail { color: #aaa; }
 
         /* 結果バー */
         .result-viz-container { position: relative; width: 100%; height: 60px; background-color: #444; border-radius: 8px; margin: 15px 0; overflow: hidden; }
@@ -48,7 +57,7 @@
         .guess-pin { position: absolute; top: 0; width: 4px; height: 100%; background-color: #fff; z-index: 10; box-shadow: 0 0 4px #000; transition: left 0.2s; }
         .target-pin { position: absolute; top: 0; width: 2px; height: 100%; background-color: #ffeb3b; z-index: 5; opacity: 0.5; border-left: 1px dashed #000; }
 
-        /* ルールボタンとモーダル */
+        /* ルールボタン */
         .rule-btn { position: fixed; top: 15px; right: 15px; width: 36px; height: 36px; border-radius: 50%; background: #444; border: 2px solid #888; color: #fff; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 1000; display: flex; justify-content: center; align-items: center; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         .modal-content { background: #2d2d2d; padding: 25px; border-radius: 15px; max-width: 500px; width: 100%; max-height: 85vh; overflow-y: auto; text-align: left; border: 1px solid #555; position: relative; color: #ddd; font-size: 14px; line-height: 1.6; }
@@ -66,7 +75,7 @@
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-close-x" onclick="toggleRuleModal()">×</div>
             <h2 style="text-align:center; color:#fff; margin-top:0;">詳しいルール</h2>
-            <div class="rule-section"><div class="rule-title">勝利条件</div><p>先に <strong style="color:#ffeb3b;">10点</strong> 取ったチームの勝利</p></div>
+            <div class="rule-section"><div class="rule-title">勝利条件</div><p>先に <strong style="color:#ffeb3b;">10点</strong> 取ったチームの勝利</p><p style="font-size:12px;">※同時に10点を超えた場合、点数が高い方が勝利。同点の場合は<strong style="color:#4CAF50;">チャンスを当てたチーム</strong>が勝利します。</p></div>
             <div class="rule-section"><div class="rule-title">ゲームの流れ</div><ol style="padding-left: 20px;"><li>ロビーでチーム分け</li><li>親がお題(数値)を確認し、ヒントを出す</li><li>チームメイトはヒントを元に位置を予想する</li><li><strong>敵チームのチャンスターン</strong><br>敵は正解が予想より「右(大きい)」か「左(小さい)」かを当てる</li><li>正解発表＆得点計算</li></ol></div>
             <div class="rule-section"><div class="rule-title">得点表</div><div style="margin-bottom:5px;"><span class="pt-badge" style="background:#ffeb3b;">5点</span> <strong>完全一致 (誤差0)</strong></div><div style="margin-bottom:5px;"><span class="pt-badge" style="background:#ff6e40;">4点</span> 誤差 ±2 以内</div><div style="margin-bottom:5px;"><span class="pt-badge" style="background:#ffd740;">3点</span> 誤差 ±5 以内</div><div style="margin-bottom:5px;"><span class="pt-badge" style="background:#4fc3f7;">2点</span> 誤差 ±8 以内</div><p style="font-size:12px; color:#aaa; margin-top:10px;">※0と100は繋がっているため、近い方のルートで判定されます</p></div>
             <div class="rule-section"><div class="rule-title">敵チームのボーナス</div><p>回答チームの予想に対し、正解が「右」か「左」かを当てると <strong style="color:#4CAF50;">+1点</strong> 獲得できます（単純な大小比較です）</p></div>
@@ -91,9 +100,7 @@
             <span id="connection-status">接続中...</span>
         </div>
 
-        <div id="my-status-area">
-            <span class="my-team-badge">観戦中</span>
-        </div>
+        <div id="my-status-area"><span class="my-team-badge">観戦中</span></div>
 
         <div class="lobby-container">
             <div class="team-column" style="border-top-color: #2196F3;">
@@ -160,7 +167,7 @@
             
             <div class="result-box">
                 <div id="res-main-result"></div>
-                <div class="counter-res" id="res-counter-result"></div>
+                <div id="res-counter-result"></div>
             </div>
 
             <button class="btn btn-green" style="margin-top:15px;" onclick="startNewRound()">次のラウンドへ</button>
@@ -175,7 +182,6 @@
     </div>
 
     <script>
-        // 設定済みFirebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDTnNp8ObeesaXjjBQqlC1MPLPh8V5SfPM",
             authDomain: "wavelength-online-2c27b.firebaseapp.com",
@@ -293,7 +299,8 @@
                 scores: scores,
                 round: round,
                 counterGuess: null,
-                resultData: null
+                resultData: null,
+                winner: null
             });
         }
 
@@ -331,11 +338,9 @@
             else if (finalDiff <= RANGES.w3) { activePts = 3; activeMsg = "おしい"; }
             else if (finalDiff <= RANGES.w2) { activePts = 2; activeMsg = "ギリギリ"; }
 
-            // 敵チーム判定 (ループなし単純比較)
+            // 敵チーム判定 (単純大小)
             let inactivePts = 0;
             let counterStr = direction === 'Right' ? '右' : '左';
-            
-            // シンプルな大小比較で正解を決定
             let trueDir = target > guess ? 'Right' : 'Left';
 
             if (finalDiff === 0) {
@@ -347,15 +352,33 @@
                 counterStr += " → ハズレ";
             }
 
+            // スコア更新
             let newScores = { ...gameState.scores };
             newScores[active] += activePts;
             newScores[inactive] += inactivePts;
+
+            // ★ 勝利判定 (同点時のルール適用) ★
+            let winner = null;
+            let nextPhaseVal = 'RESULT';
+
+            if (newScores.A >= WIN_SCORE || newScores.B >= WIN_SCORE) {
+                nextPhaseVal = 'WIN';
+                if (newScores.A > newScores.B) {
+                    winner = 'TEAM A';
+                } else if (newScores.B > newScores.A) {
+                    winner = 'TEAM B';
+                } else {
+                    // 同点の場合、チャンス(inactive)側の勝ち
+                    winner = TEAM_CONF[inactive].name;
+                }
+            }
 
             db.ref(roomId).update({
                 scores: newScores,
                 counterGuess: direction,
                 resultData: { activePts, inactivePts, finalDiff, activeMsg, counterStr },
-                phase: (newScores.A >= WIN_SCORE || newScores.B >= WIN_SCORE) ? 'WIN' : 'RESULT'
+                phase: nextPhaseVal,
+                winner: winner
             });
         }
 
@@ -384,7 +407,6 @@
 
                 const div = document.createElement('div');
                 div.className = "p-item" + (uid === myId ? " p-me" : "");
-                
                 const nameSpan = document.createElement('span');
                 nameSpan.innerText = p.name;
                 div.appendChild(nameSpan);
@@ -489,14 +511,25 @@
                 const rd = g.resultData || {};
                 
                 let html = `<div>正解: <strong style="color:#ffeb3b; font-size:24px;">${g.target}</strong></div>`;
+                
+                // ★ +0点の場合の色変えロジック
+                let mainColorClass = (rd.activePts > 0) ? "score-positive" : "score-zero";
+                let mainBgColor = (rd.activePts > 0) ? `${tmConf.color}22` : "#333";
+                let mainBorderColor = (rd.activePts > 0) ? tmConf.color : "#555";
+
                 html += `
-                    <div style="margin-top:10px; padding:10px; background:${tmConf.color}22; border-left:4px solid ${tmConf.color};">
-                        <span class="score-msg">${rd.activeMsg}</span>
-                        <span class="score-pop">+${rd.activePts}点</span>
-                        <div style="font-size:12px;">(手番: ${tmConf.name})</div>
+                    <div style="margin-top:10px; padding:15px; background:${mainBgColor}; border-left:5px solid ${mainBorderColor}; border-radius: 5px;">
+                        <span class="score-msg" style="color:${(rd.activePts > 0 ? '#ffeb3b' : '#aaa')}">${rd.activeMsg}</span>
+                        <span class="score-pop ${mainColorClass}">+${rd.activePts}点</span>
+                        <div style="font-size:12px; color:#ddd;">(手番: ${tmConf.name})</div>
                     </div>
                 `;
-                html += `<div class="counter-res">チャンス: <strong>${rd.counterStr}</strong></div>`;
+
+                // ★ チャンス結果の強調
+                let counterClass = (rd.inactivePts > 0) ? "counter-res counter-success" : "counter-res counter-fail";
+                let counterEmoji = (rd.inactivePts > 0) ? "🎯" : "";
+
+                html += `<div class="${counterClass}">${counterEmoji} チャンス: <strong>${rd.counterStr}</strong></div>`;
 
                 document.getElementById('res-main-result').innerHTML = html;
                 document.getElementById('res-counter-result').innerHTML = ""; 
@@ -504,9 +537,20 @@
             else if (g.phase === 'WIN') {
                 document.getElementById('phase-win').classList.remove('hidden');
                 infoBar.classList.add('hidden');
-                const winner = g.scores.A >= WIN_SCORE ? 'TEAM A' : 'TEAM B';
-                document.getElementById('winner-name').innerText = winner;
-                document.getElementById('winner-name').style.color = TEAM_CONF[winner.slice(-1)].color;
+                
+                // DBに保存された勝者を優先、なければ計算
+                let winnerName = g.winner;
+                if (!winnerName) {
+                    winnerName = g.scores.A >= WIN_SCORE ? 'TEAM A' : 'TEAM B';
+                }
+                
+                // チームカラー判定
+                let wColor = "#fff";
+                if(winnerName === 'TEAM A') wColor = TEAM_CONF.A.color;
+                if(winnerName === 'TEAM B') wColor = TEAM_CONF.B.color;
+
+                document.getElementById('winner-name').innerText = winnerName;
+                document.getElementById('winner-name').style.color = wColor;
             }
         }
 
