@@ -20,7 +20,6 @@
         
         input[type=range] { width: 100%; margin: 30px 0; cursor: pointer; }
 
-        /* ロビー・チーム表示 */
         .lobby-container { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; }
         .team-column { flex: 1; background: #333; padding: 10px; border-radius: 8px; border-top: 3px solid #777; }
         .team-header { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
@@ -41,13 +40,11 @@
         .guess-pin { position: absolute; top: 0; width: 4px; height: 100%; background-color: #fff; z-index: 10; box-shadow: 0 0 4px #000; transition: left 0.2s; }
         .target-pin { position: absolute; top: 0; width: 2px; height: 100%; background-color: #ffeb3b; z-index: 5; opacity: 0.5; border-left: 1px dashed #000; }
 
-        /* 結果強調表示用 */
         .result-box { background: #333; padding: 15px; border-radius: 8px; margin-top: 10px; }
         .score-pop { font-size: 40px; font-weight: bold; color: #4CAF50; text-shadow: 0 0 10px rgba(76,175,80,0.5); display: block; margin: 5px 0; }
         .score-msg { font-size: 18px; font-weight: bold; color: #ffeb3b; display: block; margin-bottom: 10px; }
         .counter-res { font-size: 14px; color: #aaa; border-top: 1px solid #555; padding-top: 10px; margin-top: 10px; }
 
-        /* ルールボタンとモーダル */
         .rule-btn { position: fixed; top: 15px; right: 15px; width: 36px; height: 36px; border-radius: 50%; background: #444; border: 2px solid #888; color: #fff; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 1000; display: flex; justify-content: center; align-items: center; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         .modal-content { background: #2d2d2d; padding: 25px; border-radius: 15px; max-width: 500px; width: 100%; max-height: 85vh; overflow-y: auto; text-align: left; border: 1px solid #555; position: relative; color: #ddd; font-size: 14px; line-height: 1.6; }
@@ -65,39 +62,11 @@
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-close-x" onclick="toggleRuleModal()">×</div>
             <h2 style="text-align:center; color:#fff; margin-top:0;">詳しいルール</h2>
-            
-            <div class="rule-section">
-                <div class="rule-title">勝利条件</div>
-                <p>先に <strong style="color:#ffeb3b;">10点</strong> 取ったチームの勝利</p>
-            </div>
-
-            <div class="rule-section">
-                <div class="rule-title">ゲームの流れ</div>
-                <ol style="padding-left: 20px;">
-                    <li>ロビーでチーム分け</li>
-                    <li>親がお題(数値)を確認し、ヒントを出す</li>
-                    <li>チームメイトはヒントを元に位置を予想する</li>
-                    <li><strong>敵チームのチャンスターン</strong><br>敵は正解が予想より「右」か「左」かを当てる</li>
-                    <li>正解発表＆得点計算</li>
-                </ol>
-            </div>
-
-            <div class="rule-section">
-                <div class="rule-title">得点表</div>
-                <div style="margin-bottom:5px;"><span class="pt-badge" style="background:#ffeb3b;">5点</span> <strong>完全一致 (誤差0)</strong></div>
-                <div style="margin-bottom:5px;"><span class="pt-badge" style="background:#ff6e40;">4点</span> 誤差 ±2 以内</div>
-                <div style="margin-bottom:5px;"><span class="pt-badge" style="background:#ffd740;">3点</span> 誤差 ±5 以内</div>
-                <div style="margin-bottom:5px;"><span class="pt-badge" style="background:#4fc3f7;">2点</span> 誤差 ±8 以内</div>
-                <p style="font-size:12px; color:#aaa; margin-top:10px;">※0と100は繋がっているため、近い方のルートで判定されます</p>
-            </div>
-
-            <div class="rule-section">
-                <div class="rule-title">敵チームのボーナス</div>
-                <p>回答チームの予想に対し、正解が「右」か「左」かを当てると <strong style="color:#4CAF50;">+1点</strong> 獲得できます</p>
-            </div>
-            <div style="text-align:center; margin-top:20px;">
-                <button class="btn" style="padding:10px 30px; font-size:14px;" onclick="toggleRuleModal()">閉じる</button>
-            </div>
+            <div class="rule-section"><div class="rule-title">勝利条件</div><p>先に <strong style="color:#ffeb3b;">10点</strong> 取ったチームの勝利</p></div>
+            <div class="rule-section"><div class="rule-title">ゲームの流れ</div><ol style="padding-left: 20px;"><li>ロビーでチーム分け</li><li>親がお題(数値)を確認し、ヒントを出す</li><li>チームメイトはヒントを元に位置を予想する</li><li><strong>敵チームのチャンスターン</strong><br>敵は正解が予想より「右」か「左」かを当てる</li><li>正解発表＆得点計算</li></ol></div>
+            <div class="rule-section"><div class="rule-title">得点表</div><div style="margin-bottom:5px;"><span class="pt-badge" style="background:#ffeb3b;">5点</span> <strong>完全一致 (誤差0)</strong></div><div style="margin-bottom:5px;"><span class="pt-badge" style="background:#ff6e40;">4点</span> 誤差 ±2 以内</div><div style="margin-bottom:5px;"><span class="pt-badge" style="background:#ffd740;">3点</span> 誤差 ±5 以内</div><div style="margin-bottom:5px;"><span class="pt-badge" style="background:#4fc3f7;">2点</span> 誤差 ±8 以内</div><p style="font-size:12px; color:#aaa; margin-top:10px;">※0と100は繋がっているため、近い方のルートで判定されます</p></div>
+            <div class="rule-section"><div class="rule-title">敵チームのボーナス</div><p>回答チームの予想に対し、正解が「右」か「左」かを当てると <strong style="color:#4CAF50;">+1点</strong> 獲得できます</p></div>
+            <div style="text-align:center; margin-top:20px;"><button class="btn" style="padding:10px 30px; font-size:14px;" onclick="toggleRuleModal()">閉じる</button></div>
         </div>
     </div>
 
@@ -118,9 +87,7 @@
             <span id="connection-status">接続中...</span>
         </div>
 
-        <div id="my-status-area">
-            <span class="my-team-badge">観戦中</span>
-        </div>
+        <div id="my-status-area"><span class="my-team-badge">観戦中</span></div>
 
         <div class="lobby-container">
             <div class="team-column" style="border-top-color: #2196F3;">
@@ -186,10 +153,7 @@
             <div class="result-viz-container" id="viz-bar"></div>
             
             <div class="result-box">
-                <div style="margin-bottom:10px;">正解: <strong style="color:#ffeb3b; font-size:24px;">${g.target}</strong></div>
-                
                 <div id="res-main-result"></div>
-                
                 <div class="counter-res" id="res-counter-result"></div>
             </div>
 
@@ -205,17 +169,16 @@
     </div>
 
     <script>
-        // ★★★ Firebase設定 (ここを書き換えてください！) ★★★
+        // 設定済みFirebase Config
         const firebaseConfig = {
-  apiKey: "AIzaSyDTnNp8ObeesaXjjBQqlC1MPLPh8V5SfPM",
-  authDomain: "wavelength-online-2c27b.firebaseapp.com",
-  databaseURL: "https://wavelength-online-2c27b-default-rtdb.firebaseio.com",
-  projectId: "wavelength-online-2c27b",
-  storageBucket: "wavelength-online-2c27b.firebasestorage.app",
-  messagingSenderId: "1057840306391",
-  appId: "1:1057840306391:web:432e632f9af1f286643892"
-};
-        // ★★★★★★★★★★★★★★★★★★★★★★★
+            apiKey: "AIzaSyDTnNp8ObeesaXjjBQqlC1MPLPh8V5SfPM",
+            authDomain: "wavelength-online-2c27b.firebaseapp.com",
+            databaseURL: "https://wavelength-online-2c27b-default-rtdb.firebaseio.com",
+            projectId: "wavelength-online-2c27b",
+            storageBucket: "wavelength-online-2c27b.firebasestorage.app",
+            messagingSenderId: "1057840306391",
+            appId: "1:1057840306391:web:432e632f9af1f286643892"
+        };
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -269,7 +232,7 @@
                 });
             })
             .catch((error) => {
-                alert("エラー：接続できません。\nAPIキー設定やDBルールを確認してください。\n" + error.message);
+                alert("エラー：接続できません。\n" + error.message);
                 loginBtn.disabled = false;
                 loginBtn.innerText = "ロビーへ入室";
             });
@@ -346,15 +309,14 @@
         function submitCounter(direction) {
             if (myTeam === gameState.currentTeam) return; 
 
-            const target = gameState.target;
-            const guess = gameState.guess;
+            const target = Number(gameState.target);
+            const guess = Number(gameState.guess);
             const active = gameState.currentTeam;
             const inactive = active === 'A' ? 'B' : 'A';
 
             let diff = Math.abs(target - guess);
             let finalDiff = Math.min(diff, 100 - diff);
 
-            // アクティブチーム得点計算 & メッセージ生成
             let activePts = 0;
             let activeMsg = "失敗...";
             if (finalDiff === 0) { activePts = 5; activeMsg = "奇跡の完全一致!!"; }
@@ -362,11 +324,13 @@
             else if (finalDiff <= RANGES.w3) { activePts = 3; activeMsg = "おしい"; }
             else if (finalDiff <= RANGES.w2) { activePts = 2; activeMsg = "ギリギリ"; }
 
-            // 敵チーム得点計算
             let inactivePts = 0;
             let counterStr = direction === 'Right' ? '右' : '左';
+            
+            // ループ考慮の方向判定
             let d = target - guess;
-            if (d > 50) d -= 100; if (d < -50) d += 100;
+            if (d > 50) d -= 100;
+            if (d < -50) d += 100;
             let trueDir = d > 0 ? 'Right' : 'Left';
 
             if (finalDiff === 0) {
@@ -519,11 +483,7 @@
                 
                 const rd = g.resultData || {};
                 
-                // 結果詳細のHTML生成
-                // 1. 正解数値
                 let html = `<div>正解: <strong style="color:#ffeb3b; font-size:24px;">${g.target}</strong></div>`;
-                
-                // 2. メインチーム結果
                 html += `
                     <div style="margin-top:10px; padding:10px; background:${tmConf.color}22; border-left:4px solid ${tmConf.color};">
                         <span class="score-msg">${rd.activeMsg}</span>
@@ -531,16 +491,10 @@
                         <div style="font-size:12px;">(手番: ${tmConf.name})</div>
                     </div>
                 `;
-
-                // 3. チャンス結果
-                html += `
-                    <div class="counter-res">
-                        チャンス: <strong>${rd.counterStr}</strong>
-                    </div>
-                `;
+                html += `<div class="counter-res">チャンス: <strong>${rd.counterStr}</strong></div>`;
 
                 document.getElementById('res-main-result').innerHTML = html;
-                document.getElementById('res-counter-result').innerHTML = ""; // 以前の要素をクリア
+                document.getElementById('res-counter-result').innerHTML = ""; 
             }
             else if (g.phase === 'WIN') {
                 document.getElementById('phase-win').classList.remove('hidden');
@@ -582,4 +536,3 @@
     </script>
 </body>
 </html>
-
